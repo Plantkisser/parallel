@@ -11,7 +11,7 @@
 #include <math.h>
 
 
-#define N_CORES 4
+#define N_CORES 6
 
 struct CalcStr
 {
