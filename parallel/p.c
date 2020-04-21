@@ -9,9 +9,9 @@
 #include <sys/ipc.h>
 #include <sys/sem.h>
 #include <math.h>
+#include <errno.h>
 
-
-#define N_CORES 6
+#define N_CORES 4
 
 struct CalcStr
 {
@@ -110,6 +110,7 @@ int main(int argc, char const *argv[])
 	struct CalcStr* mem = (struct CalcStr*) calloc (2 * n, sizeof(struct CalcStr));
 
 
+
 	int i = 0;
 
 	int max = n > N_CORES ? n : N_CORES;
@@ -120,10 +121,10 @@ int main(int argc, char const *argv[])
 	double step = 2.0 / n;
 	double start = 1.0;
 	double res = 0;
-	double delta = 2.0 / 10000000;
+	double delta = 2.0 / 100000000;
 
 
-	int sem_id = semget(IPC_PRIVATE, 2, 0);
+	int sem_id = semget(IPC_PRIVATE, 2, 0666);
 
 	struct sembuf str;
 
@@ -133,7 +134,6 @@ int main(int argc, char const *argv[])
 
 	semop(sem_id, &str, 1);
 
-
 	for (i = 0; i < n; ++i, start += step)
 	{
 		mem[2 * i].st = start;
@@ -142,14 +142,17 @@ int main(int argc, char const *argv[])
 		mem[2 * i].sem_id = sem_id;
 		mem[2 * i].final_res = &res;
 		mem[2 * i].delta = delta;
-		if (pthread_create(&tinfo[i], NULL, calculate,(void*) &(mem[i * 2])) == -1)
+		if (pthread_create(&tinfo[i], NULL, calculate,(void*) &(mem[i * 2])) != 0)
 		{
 			printf("Error create threads\n");
 			exit(EXIT_FAILURE);
 		}
 	}
 
+
 	struct Useless buf[N_CORES];
+
+
 
 	if (n < N_CORES)
 	{
@@ -173,7 +176,7 @@ int main(int argc, char const *argv[])
 	{
 		if (pthread_join(tinfo[i], NULL) != 0)
 		{
-			printf("Error join thread: %d\n", i);
+			printf("Error join thread: %d %d\n", i, errno);
 			exit(EXIT_FAILURE);
 		}
 	}
@@ -185,7 +188,6 @@ int main(int argc, char const *argv[])
 	semop(sem_id, &str, 1);
 
 	printf("%.3f\n", res);
-
 
 
 
