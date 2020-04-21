@@ -204,7 +204,8 @@ int main(int argc, char const *argv[])
 
 	printf("%.3f\n", res);
 
-
+	free(tinfo);
+	free(mem);
 
 
 
