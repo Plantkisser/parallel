@@ -104,10 +104,20 @@ int main(int argc, char const *argv[])
 	}
 
 	int n = strtol(argv[1], NULL, 10);
+	if (errno == ERANGE)
+	{
+		printf("Error create threads\n");
+		exit(EXIT_FAILURE);
+	}
 
 
 
 	struct CalcStr* mem = (struct CalcStr*) calloc (2 * n, sizeof(struct CalcStr));
+	if (!mem)
+	{
+		printf("Error create threads\n");
+		exit(EXIT_FAILURE);
+	}
 
 
 
@@ -116,6 +126,11 @@ int main(int argc, char const *argv[])
 	int max = n > N_CORES ? n : N_CORES;
 
 	pthread_t* tinfo = (pthread_t*) calloc (max, sizeof(pthread_t));
+	if (!tinfo)
+	{
+		printf("Error create threads\n");
+		exit(EXIT_FAILURE);
+	}
 
 
 	double step = 2.0 / n;
